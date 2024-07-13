@@ -1,10 +1,10 @@
-//board
+// board setup
 let board;
 let boardWidth = 360;
 let boardHeight = 640;
-let context; // use for drawing on canvase
+let context; // use for drawing on canvas
 
-//bird setup
+// bird setup
 let birdWidth = 34;
 let birdHeight = 24;
 let birdX = boardWidth / 8;
@@ -18,7 +18,7 @@ let bird = {
   height: birdHeight,
 };
 
-//pipes
+// pipes
 let pipeArray = [];
 let pipeWidth = 64;
 let pipeHeight = 512;
@@ -28,7 +28,7 @@ let pipeY = 0;
 let topPipeImg;
 let bottomPipeImg;
 
-//game physics
+// game physics
 let velocityX = -2; // pipes moving left speed
 let velocityY = 0; // bird jump speed
 let gravity = 0.4;
@@ -44,10 +44,6 @@ window.onload = function () {
   board.width = boardWidth;
   context = board.getContext("2d"); // used for drawing on the board
 
-  //draw flappy bird
-  //   context.fillStyle = "green";
-  //   context.fillRect(bird.x, bird.y, bird.width, bird.height);
-
   // load bird image
   birdImg = new Image();
   birdImg.src = "./flappybird.png";
@@ -55,7 +51,7 @@ window.onload = function () {
     context.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
   };
 
-  // load pipe image
+  // load pipe images
   topPipeImg = new Image();
   topPipeImg.src = "./toppipe.png";
 
@@ -66,13 +62,11 @@ window.onload = function () {
 
   setInterval(placePipes, 1500); // every 1.5 seconds
 
-  // Event listener for mouse click
   document.addEventListener("click", moveBird);
-
   document.addEventListener("keydown", moveBird); // to move the bird
 };
 
-// use to update the frames  of canvas or Main game loop
+// main game loop
 function update() {
   requestAnimationFrame(update);
 
@@ -80,31 +74,25 @@ function update() {
     return;
   }
 
-  // clear frame when new frame updated
   context.clearRect(0, 0, board.width, board.height);
 
-  //bird
-  velocityY += gravity; // gravity effect
-  //   bird.y += velocityY;
-
-  // to make sure the bird is not going out of the board on top
+  // bird
+  velocityY += gravity;
   bird.y = Math.max(bird.y + velocityY, 0);
   context.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
 
-  // drop collision  detection
   if (bird.y > board.height) {
     gameOver = true;
   }
 
-  //pipes -> will draw pipes on the board
+  // pipes
   for (let i = 0; i < pipeArray.length; i++) {
     let pipe = pipeArray[i];
-    pipe.x += velocityX; // will shift pipes to the left
+    pipe.x += velocityX;
     context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
 
-    // to increase score
     if (!pipe.passed && bird.x > pipe.x + pipe.width) {
-      score += 0.5; //0.5 because there are two pipes! 0.5*2 = 1, 1 for each set of pipes
+      score += 0.5;
       highScore = Math.max(score, highScore);
       pipe.passed = true;
     }
@@ -114,9 +102,9 @@ function update() {
     }
   }
 
-  //clear pipes
+  // clear pipes
   while (pipeArray.length > 0 && pipeArray[0].x < -pipeWidth) {
-    pipeArray.shift(); //removes first element from array
+    pipeArray.shift();
   }
 
   // score
@@ -130,10 +118,12 @@ function update() {
   context.fillText(highScore, 315, 45);
 
   if (gameOver) {
-    // context.fillStyle = "red";
     context.font = "45px sans-serif";
     context.fillText("GAME OVER", 35, 290);
   }
+
+  // Run the AI
+  auto_AI();
 }
 
 function placePipes() {
@@ -141,7 +131,7 @@ function placePipes() {
     return;
   }
 
-  let randomPipeY = pipeY - pipeHeight / 4 - Math.random() * (pipeHeight / 2); // change the y position of the pipes
+  let randomPipeY = pipeY - pipeHeight / 4 - Math.random() * (pipeHeight / 2);
   let openingSpace = board.height / 4;
 
   let topPipe = {
@@ -155,7 +145,6 @@ function placePipes() {
 
   pipeArray.push(topPipe);
 
-  //bottom pipe
   let bottomPipe = {
     img: bottomPipeImg,
     x: pipeX,
@@ -177,7 +166,6 @@ function moveBird(event) {
   ) {
     velocityY = -6;
 
-    //reset game
     if (gameOver) {
       bird.y = birdY;
       pipeArray = [];
@@ -194,4 +182,22 @@ function detectCollision(a, b) {
     a.y < b.y + b.height &&
     a.y + a.height > b.y
   );
+}
+
+function auto_AI() {
+  if (pipeArray.length > 0) {
+    let nearestPipe = pipeArray[0];
+    for (let i = 0; i < pipeArray.length; i++) {
+      if (pipeArray[i].x + pipeWidth > bird.x) {
+        nearestPipe = pipeArray[i];
+        break;
+      }
+    }
+
+    let pipeMiddle = nearestPipe.y + pipeHeight + (board.height / 4) / 2;
+
+    if (bird.y > pipeMiddle) {
+      moveBird({ code: "Space" });
+    }
+  }
 }
