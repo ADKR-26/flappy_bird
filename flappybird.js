@@ -37,6 +37,8 @@ let gameOver = false;
 let score = 0;
 let highScore = 0;
 
+let activateAI = false;
+
 // canvas setup
 window.onload = function () {
   board = document.getElementById("board");
@@ -122,8 +124,10 @@ function update() {
     context.fillText("GAME OVER", 35, 290);
   }
 
-//   // Run the AI
-//   auto_AI();
+  if (activateAI) {
+    // Run the AI
+    auto_AI();
+  }
 }
 
 function placePipes() {
@@ -194,10 +198,18 @@ function auto_AI() {
       }
     }
 
-    let pipeMiddle = nearestPipe.y + pipeHeight + (board.height / 4) / 2;
+    let pipeMiddle = nearestPipe.y + pipeHeight + board.height / 4 / 2;
 
     if (bird.y > pipeMiddle) {
       moveBird({ code: "Space" });
     }
+  }
+}
+
+function toggleAI() {
+  activateAI = !activateAI;
+  if (activateAI) {
+    // Start auto AI if it's activated
+    auto_AI();
   }
 }
