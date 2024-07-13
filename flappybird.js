@@ -122,8 +122,8 @@ function update() {
     context.fillText("GAME OVER", 35, 290);
   }
 
-  // Run the AI
-  auto_AI();
+//   // Run the AI
+//   auto_AI();
 }
 
 function placePipes() {
